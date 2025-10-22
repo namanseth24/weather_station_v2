@@ -71,7 +71,3 @@ Then open your browser and go to:
 ```
 http://localhost:5173/
 ```
-
-## 🪪 License
-
-This project is licensed under the **MIT License** — free to use, modify, and share with proper credit.
