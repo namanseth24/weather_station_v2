@@ -9,6 +9,11 @@
           <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile Avatar" />
         </div>
         <div v-if="showDropdown" class="dropdown">
+          <p class="user-email">
+            Logged in as<br />
+            <strong>{{ userEmail || "User" }}</strong>
+          </p>
+          <hr />
           <button @click="logout">Logout</button>
         </div>
       </div>
@@ -39,6 +44,7 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import Chart from "chart.js/auto";
 
 const showDropdown = ref(false);
+const userEmail = ref(localStorage.getItem("email") || "");
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
@@ -181,7 +187,24 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   z-index: 10;
-  animation: fadeIn 0.2s ease;
+  min-width: 180px;
+  padding: 8px 0;
+}
+
+.user-email {
+  font-size: 0.9em;
+  color: #333;
+  padding: 10px 15px;
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.dropdown hr {
+  border: none;
+  height: 1px;
+  background: #eee;
+  margin: 6px 0;
 }
 
 .dropdown button {
@@ -191,7 +214,7 @@ onBeforeUnmount(() => {
   border: none;
   background: none;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   font-size: 1em;
   color: #333;
   transition: 0.3s;
