@@ -1,20 +1,28 @@
 <template>
-  <div class="dashboard-container">
+  <div class="dashboard-container" :class="{ 'dark-mode': isDarkMode }">
     <header class="header">
       <h2>IoT Sensor Dashboard</h2>
 
-      <!-- Avatar dropdown -->
-      <div class="profile-menu">
-        <div class="avatar" @click="toggleDropdown">
-          <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile Avatar" />
-        </div>
-        <div v-if="showDropdown" class="dropdown">
-          <p class="user-email">
-            Logged in as<br />
-            <strong>{{ userEmail || "User" }}</strong>
-          </p>
-          <hr />
-          <button @click="logout">Logout</button>
+      <div class="header-right">
+        <!-- Dark Mode Toggle -->
+        <button class="theme-toggle" @click="toggleTheme" :title="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+          <span v-if="!isDarkMode">🌙</span>
+          <span v-else>☀️</span>
+        </button>
+
+        <!-- Avatar dropdown -->
+        <div class="profile-menu">
+          <div class="avatar" @click="toggleDropdown">
+            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile Avatar" />
+          </div>
+          <div v-if="showDropdown" class="dropdown">
+            <p class="user-email">
+              Logged in as<br />
+              <strong>{{ userEmail || "User" }}</strong>
+            </p>
+            <hr />
+            <button @click="logout">Logout</button>
+          </div>
         </div>
       </div>
     </header>
@@ -45,9 +53,18 @@ import Chart from "chart.js/auto";
 
 const showDropdown = ref(false);
 const userEmail = ref(localStorage.getItem("email") || "");
+const isDarkMode = ref(localStorage.getItem("darkMode") === "true" || false);
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value;
+}
+
+function toggleTheme() {
+  isDarkMode.value = !isDarkMode.value;
+  localStorage.setItem("darkMode", isDarkMode.value.toString());
+  
+  // Update chart colors when theme changes
+  updateChartThemes();
 }
 
 function logout() {
@@ -73,6 +90,9 @@ function createChart(sensor) {
   const ctx = document.getElementById(sensor.id);
   if (!ctx) return;
 
+  const textColor = isDarkMode.value ? '#e0e0e0' : '#666';
+  const gridColor = isDarkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
   charts[sensor.pin] = new Chart(ctx, {
     type: 'line',
     data: {
@@ -89,10 +109,58 @@ function createChart(sensor) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: textColor
+          }
+        }
+      },
       scales: {
-        x: { title: { display: true, text: "Time" } },
-        y: { beginAtZero: true, title: { display: true, text: sensor.label } }
+        x: { 
+          title: { 
+            display: true, 
+            text: "Time",
+            color: textColor
+          },
+          ticks: { color: textColor },
+          grid: { color: gridColor }
+        },
+        y: { 
+          beginAtZero: true, 
+          title: { 
+            display: true, 
+            text: sensor.label,
+            color: textColor
+          },
+          ticks: { color: textColor },
+          grid: { color: gridColor }
+        }
       }
+    }
+  });
+}
+
+function updateChartThemes() {
+  const textColor = isDarkMode.value ? '#e0e0e0' : '#666';
+  const gridColor = isDarkMode.value ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+  Object.values(charts).forEach(chart => {
+    if (chart) {
+      // Update legend color
+      chart.options.plugins.legend.labels.color = textColor;
+      
+      // Update x-axis
+      chart.options.scales.x.title.color = textColor;
+      chart.options.scales.x.ticks.color = textColor;
+      chart.options.scales.x.grid.color = gridColor;
+      
+      // Update y-axis
+      chart.options.scales.y.title.color = textColor;
+      chart.options.scales.y.ticks.color = textColor;
+      chart.options.scales.y.grid.color = gridColor;
+      
+      chart.update();
     }
   });
 }
@@ -131,6 +199,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Base Light Mode Styles */
 .dashboard-container {
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.689);
@@ -138,6 +207,13 @@ onBeforeUnmount(() => {
   min-height: 100vh;
   padding: 30px;
   overflow-x: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Mode Styles */
+.dashboard-container.dark-mode {
+  background: rgba(0, 0, 0, 0.568);
+  color: rgb(230, 230, 230);
 }
 
 .header {
@@ -150,9 +226,47 @@ onBeforeUnmount(() => {
 
 .header h2 {
   margin: 0;
+  transition: color 0.3s ease;
 }
 
-/* ✅ Profile Avatar Dropdown */
+.dark-mode .header h2 {
+  color: #ffffff;
+}
+
+/* Header Right Container */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 2px solid #05623b;
+  background: white;
+  cursor: pointer;
+  font-size: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .theme-toggle {
+  background: #2a2a3e;
+  border-color: #ffa500;
+}
+
+/* Profile Avatar Dropdown */
 .profile-menu {
   position: relative;
 }
@@ -172,6 +286,10 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
 }
 
+.dark-mode .avatar {
+  border-color: #ffa500;
+}
+
 .avatar img {
   width: 100%;
   height: 100%;
@@ -189,6 +307,12 @@ onBeforeUnmount(() => {
   z-index: 10;
   min-width: 180px;
   padding: 8px 0;
+  transition: background 0.3s ease;
+}
+
+.dark-mode .dropdown {
+  background: #2a2a3e;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
 .user-email {
@@ -198,6 +322,11 @@ onBeforeUnmount(() => {
   margin: 0;
   line-height: 1.4;
   text-align: center;
+  transition: color 0.3s ease;
+}
+
+.dark-mode .user-email {
+  color: #e0e0e0;
 }
 
 .dropdown hr {
@@ -205,6 +334,11 @@ onBeforeUnmount(() => {
   height: 1px;
   background: #eee;
   margin: 6px 0;
+  transition: background 0.3s ease;
+}
+
+.dark-mode .dropdown hr {
+  background: #444;
 }
 
 .dropdown button {
@@ -225,18 +359,67 @@ onBeforeUnmount(() => {
   color: #e00000;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.dark-mode .dropdown button {
+  color: #e0e0e0;
 }
 
-/* Responsive Design */
+.dark-mode .dropdown button:hover {
+  background: #3a3a4e;
+  color: #ff6b6b;
+}
+
+/* Project Description */
+.project-description {
+  background: rgb(255, 255, 255);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  margin-bottom: 30px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark-mode .project-description {
+  background: rgba(40, 40, 55, 0.8);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.project-description h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  transition: color 0.3s ease;
+}
+
+.dark-mode .project-description h2 {
+  color: #ffffff;
+}
+
+.project-description p {
+  margin: 0;
+  line-height: 1.6;
+  transition: color 0.3s ease;
+}
+
+.dark-mode .project-description p {
+  color: #d0d0d0;
+}
+
+/* Sensor Section */
+.sensor-section {
+  margin-top: 30px;
+}
+
+.sensor-section h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2em;
+  transition: color 0.3s ease;
+}
+
+.dark-mode .sensor-section h1 {
+  color: #ffffff;
+}
+
+/* Chart Wrapper */
 .chart-wrapper {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -254,6 +437,12 @@ onBeforeUnmount(() => {
   height: 280px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.333);
   box-sizing: border-box;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark-mode .chart-box {
+  background: rgba(40, 40, 55, 0.8);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
 }
 
 canvas {
@@ -261,9 +450,7 @@ canvas {
   height: 100% !important;
 }
 
-/* Mobile Fixes */
-
-/* Mobile screens (1 column) */
+/* Responsive Design */
 @media (max-width: 599px) {
   .chart-wrapper {
     grid-template-columns: 1fr;
@@ -279,29 +466,28 @@ canvas {
     padding: 15px;
   }
 
-  /* ✅ Fix header stacking and alignment on mobile */
   .header {
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     text-align: center;
-    gap: 12px;
+    gap: 15px;
     margin-bottom: 20px;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: center;
   }
 
   .header h2 {
     text-align: center;
     font-size: 1.4em;
-  }
-  .profile-menu {
-    top: auto;
-    right: 50%;
-    left: 50%;
+    width: 100%;
   }
 
   .dropdown {
-    top: auto;
     right: auto;
-    left: auto;
+    left: 50%;
     transform: translateX(-50%);
   }
 
@@ -311,6 +497,23 @@ canvas {
 
   .project-description {
     padding: 15px;
+  }
+}
+
+/* Extra small mobile */
+@media (max-width: 400px) {
+  .chart-box {
+    height: 220px;
+  }
+
+  .sensor-section h1 {
+    font-size: 1.3em;
+  }
+
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3em;
   }
 }
 </style>
