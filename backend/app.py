@@ -13,7 +13,10 @@ from datetime import datetime, timedelta
 import json
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for Vue.js frontend
+CORS(app,origins=['https://localhost:5173',#Local development
+                  'https://firebase-flask-api-vbpz.vercel.app/', # Production
+                  'https://*.vercel.app']) # all vercel preview development 
+# Enable CORS for Vue.js frontend
 
 # Configuration
 MODEL_DIR = "models_neemrana"
