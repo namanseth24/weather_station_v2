@@ -34,7 +34,7 @@ onMounted(() => {
     if (!dismissed || (dismissedTime && Date.now() - dismissedTime > 7 * 24 * 60 * 60 * 1000)) {
       setTimeout(() => {
         showInstallPrompt.value = true;
-      }, 3000); // Show after 3 seconds
+      }, 5000); // Show after 3 seconds
     }
   });
 

@@ -52,20 +52,21 @@ It demonstrates how IoT dashboards can represent live environmental parameters t
 
 Follow these steps to run the dashboard locally:
 
+### Frontend
 ```bash
-# Create a new Vue project
-npm create vue@latest weather-dashboard
-
-# Navigate to the project folder
-cd weather-dashboard
-
-# Install dependencies
+cd frontend
 npm install
-
-# Run the development server
 npm run dev
 ```
 
+### Backend
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+```
 Then open your browser and go to:
 
 ```
