@@ -122,7 +122,7 @@
 
     <!-- Historical Comparison View -->
     <section class="comparison-section" v-if="viewMode === 'comparison'">
-      <h1>Historical Comparison - Last 7 Days</h1>
+      <h1>Historical Comparison</h1>
       <div class="comparison-controls">
         <button @click="comparisonDays = 7" :class="{ active: comparisonDays === 7 }">
           7 Days
